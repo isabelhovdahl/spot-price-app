@@ -131,7 +131,7 @@ tabs = dbc.Tabs(
 #%% App layout
 
 
-app = Dash(external_stylesheets = [dbc.themes.FLATLY, dbc_css])
+app = Dash(__name__, external_stylesheets = [dbc.themes.FLATLY, dbc_css])
 server = app.server
 
 text = """
@@ -201,8 +201,8 @@ def update_table(day, area, data = df):
 
     return dbc.Table.from_dataframe(subset, striped = True, bordered = True, hover = True)
 
-
-app.run(debug = True)
+if __name__ == '__main__':
+    app.run(debug = True)
 
 
 
