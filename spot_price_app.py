@@ -1,5 +1,8 @@
+#!/usr/bin/env python
+# coding: utf-8
 
-#%% Import packages
+# In[ ]:
+
 
 import pandas as pd
 from datetime import date
@@ -8,13 +11,27 @@ import plotly.express as px
 from dash import Dash, dcc, html
 from dash.dependencies import Output, Input
 
+
+# In[ ]:
+
+
+#from dash import jupyter_dash
+#jupyter_dash.default_mode = 'external'
+
+
+# In[ ]:
+
+
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 dbc_css = 'https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates@V1.0.2/dbc.min.css'
 
+
+# In[ ]:
+
+
 load_figure_template('flatly')
 
-#%% Assignment:
 
 # # Spot price dashboard V2
 # 
@@ -36,10 +53,63 @@ load_figure_template('flatly')
 # - **Currency**: currency of spot price
 # - **UpdateTime**: timestamp to indicate when the observation was last updated
 
-#%% Import and clean data
+# #### Import and explore data
+
+# In[ ]:
+
 
 # Import data
 df = pd.read_csv('2023_01_DayAheadPrices_12.1.D.csv', sep = '\t')
+
+#df
+
+
+# In[ ]:
+
+
+# Check: only one type of area in the data (bidding zones)
+#df['AreaTypeCode'].unique()
+
+
+# In[ ]:
+
+
+# Check: same number of unique values in AreaCode, AreaName and MapCode
+#df['AreaCode'].nunique() == df['AreaName'].nunique() == df['MapCode'].nunique()
+
+
+# In[ ]:
+
+
+# Check: number of unique currencies
+#df['Currency'].unique()
+
+
+# In[ ]:
+
+
+# Note: All countries/bidding zones use EUR, except Ukraine
+#df[df['Currency'] == 'UAH']
+
+
+# In[ ]:
+
+
+# Check: number of unique resolution codes
+#df['ResolutionCode'].unique()
+
+
+# In[ ]:
+
+
+# Note: only Austria and Germany offers 15 min resolution (but they also have 60 min resolution)
+#df[df['ResolutionCode'] == 'PT15M']['MapCode'].unique()
+
+
+# #### Clean and visualize data
+
+# In[ ]:
+
 
 # Convert to datetime
 df['DateTime'] = pd.to_datetime(df['DateTime'])
@@ -50,11 +120,16 @@ df = df[df['MapCode'].isin(['NO1', 'NO2', 'NO3', 'NO4', 'NO5'])].copy()
 # Create date column as string
 df['Day'] = df['DateTime'].dt.date.astype(str)
 
-#%% Visualize data
+#print(df['MapCode'].nunique())
+#print(df['DateTime'].nunique())
+#df
 
-# The function `plot_price` takes a day (as a string) and the map code of a 
-# bidding zone, and returns a line plot that replicates as close as possible 
-# the step chart in the ENTSO-E dashboard. 
+
+# The function `plot_price` takes a day (as a string) and the map code of a bidding zone, and returns a line plot that replicates as close as possible the step chart in the ENTSO-E dashboard. 
+
+# In[ ]:
+
+
 def plot_price(day, area, data = df):
     
     # Extract subset
@@ -90,13 +165,12 @@ def plot_price(day, area, data = df):
 #plot_price('2023-01-31', 'NO3')
 
 
+# ### Application
+# 
+# The application will allow users to select a (Norwegian) bidding zone and a day, and it will display the hourly spot price in for that day in both a table and graph. The layout of the application will be based on a tab structure, in which the table and graphs are displayed in individual tabs.
 
-#%% Application
+# In[ ]:
 
-# The application will allow users to select a (Norwegian) bidding zone and 
-# a day, and it will display the hourly spot price in for that day in both a 
-# table and graph. The layout of the application will be based on a tab 
-# structure, in which the table and graphs are displayed in individual tabs.
 
 # Single date picker to select day
 datepicker = dcc.DatePickerSingle(
@@ -119,7 +193,10 @@ areapicker = dcc.RadioItems(
     value = 'NO1'
 )
 
-# Tab structure
+
+# In[ ]:
+
+
 tabs = dbc.Tabs(
     children = [
         dbc.Tab([html.Br(), dbc.Container(id = 'my_table')], label = 'Table'),
@@ -128,7 +205,7 @@ tabs = dbc.Tabs(
 )
 
 
-#%% App layout
+# In[ ]:
 
 
 app = Dash(__name__, external_stylesheets = [dbc.themes.FLATLY, dbc_css])
@@ -201,8 +278,18 @@ def update_table(day, area, data = df):
 
     return dbc.Table.from_dataframe(subset, striped = True, bordered = True, hover = True)
 
+
 if __name__ == '__main__':
     app.run(debug = True)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
 
 
 
